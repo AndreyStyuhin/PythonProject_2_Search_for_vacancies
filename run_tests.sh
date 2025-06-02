@@ -1,17 +1,10 @@
-#!/bin/bash
 
 # Активировать виртуальное окружение
 source .venv/bin/activate
 
 # Установить PYTHONPATH
-export PYTHONPATH=src
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Запуск тестов с покрытием
-pytest --cov=src --cov-report=term --cov-report=html
+pytest tests/ --cov=src --cov-report=html --cov-report=term
 
-# Открыть HTML-отчёт (если установлен xdg-open или open)
-if command -v xdg-open &> /dev/null; then
-    xdg-open htmlcov/index.html
-elif command -v open &> /dev/null; then
-    open htmlcov/index.html
-fi

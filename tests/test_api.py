@@ -1,5 +1,4 @@
-import pytest
-from src.hh import HHVacancyAPI
+from src.api.hh_api import HHVacancyAPI
 
 def test_hh_api_get_vacancies(mocker):
     mock_response = mocker.Mock()
@@ -25,3 +24,15 @@ def test_hh_api_get_vacancies(mocker):
     assert isinstance(results, list)
     assert results[0]["name"] == "Mock Dev"
     assert results[0]["salary"]["from"] == 100000
+
+
+def test_hh_api_request_params(mocker):
+    mock_get = mocker.patch("src.hh.requests.get")
+    api = HHVacancyAPI()
+    api.get_vacancies("Python")
+
+    mock_get.assert_called_once()
+    args, kwargs = mock_get.call_args
+    assert kwargs["params"]["text"] == "Python"
+    assert kwargs["params"]["area"] == 113
+    assert kwargs["params"]["per_page"] == 100

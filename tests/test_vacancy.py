@@ -1,5 +1,5 @@
 import pytest
-from src.hh import Vacancy
+from src.models.vacancy import Vacancy
 
 def test_vacancy_salary_calculation():
     vacancy1 = Vacancy("Dev", "link", {"from": 100000, "to": 200000}, "desc", "req")
@@ -33,3 +33,28 @@ def test_validate_and_create_valid_data():
     assert vacancy.title == "Backend Developer"
     assert vacancy.get_salary() == 125000
     assert "Django" in vacancy.requirements
+
+
+def test_vacancy_repr():
+    vacancy = Vacancy("Dev", "link", {"from": 100000}, "desc", "req")
+    assert "Vacancy(title=" in repr(vacancy)
+    assert "desc" in repr(vacancy)
+
+
+def test_vacancy_to_dict():
+    vacancy = Vacancy("Dev", "link", {"from": 100000}, "desc", "req")
+    data = vacancy.to_dict()
+    assert data["title"] == "Dev"
+    assert data["salary"]["from"] == 100000
+
+
+def test_vacancy_comparison_operators():
+    v1 = Vacancy("A", "link", {"from": 100000}, "desc", "req")
+    v2 = Vacancy("B", "link", {"from": 100000}, "desc", "req")
+    v3 = Vacancy("C", "link", {"from": 150000}, "desc", "req")
+
+    assert v1 == v2
+    assert v1 <= v2
+    assert v1 >= v2
+    assert v3 > v1
+    assert v1 < v3

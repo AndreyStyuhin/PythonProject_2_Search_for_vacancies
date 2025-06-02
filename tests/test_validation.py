@@ -1,5 +1,5 @@
 import pytest
-from src.hh import Vacancy
+from src.models.vacancy import Vacancy
 
 def test_validate_and_create_invalid_salary():
     bad_data = {
@@ -25,3 +25,23 @@ def test_validate_and_create_missing_fields():
     assert vacancy.title == "No Salary"
     assert vacancy.salary is None
     assert vacancy.get_salary() == 0
+
+def test_validate_and_create_missing_title():
+    data = {
+        "alternate_url": "http://example.com",
+        "description": "No title",
+        "snippet": {"requirement": ""},
+    }
+    with pytest.raises(ValueError):
+        Vacancy.validate_and_create(data)
+
+def test_validate_and_create_invalid_salary_structure():
+    data = {
+        "name": "Invalid Salary",
+        "alternate_url": "http://example.com",
+        "salary": {"amount": 100000},  # Неправильная структура
+        "description": "Test",
+        "snippet": {"requirement": ""},
+    }
+    with pytest.raises(ValueError):
+        Vacancy.validate_and_create(data)

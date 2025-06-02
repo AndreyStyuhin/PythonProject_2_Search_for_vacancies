@@ -1,11 +1,11 @@
-from src.hh import (
-    HHVacancyAPI,
+from src.api import HHVacancyAPI
+from src.storage import (
     JSONVacancyStorage,
     CSVVacancyStorage,
     ExcelVacancyStorage,
-    TXTVacancyStorage,
-    VacancyManager
+    TXTVacancyStorage
 )
+from src.managers import VacancyManager
 import os
 
 
@@ -43,69 +43,109 @@ def user_interaction() -> None:
     # Создание экземпляров API и хранилища
     api = HHVacancyAPI()
 
-    if storage_type == "JSON":
-        storage = JSONVacancyStorage(file_path)
-    elif storage_type == "CSV":
-        storage = CSVVacancyStorage(file_path)
-    elif storage_type == "Excel":
-        storage = ExcelVacancyStorage(file_path)
-    else:
-        storage = TXTVacancyStorage(file_path)
+    # Создание хранилища в зависимости от выбора пользователя
+    storage = _create_storage(storage_type, file_path)
 
+    # Создание менеджера вакансий
     manager = VacancyManager(api, storage)
 
-    while True:
-        print("\nМеню:")
-        print("1. Поиск вакансий на hh.ru")
-        print("2. Показать топ N вакансий по зарплате")
-        print("3. Поиск вакансий по ключевому слову в описании")
-        print("4. Выход")
+    # Основной цикл взаимодействия с пользователем
+    _main_menu_loop(manager)
 
+
+def _create_storage(storage_type: str, file_path: str):
+    """Создает экземпляр хранилища в зависимости от типа."""
+    storage_classes = {
+        "JSON": JSONVacancyStorage,
+        "CSV": CSVVacancyStorage,
+        "Excel": ExcelVacancyStorage,
+        "TXT": TXTVacancyStorage
+    }
+
+    storage_class = storage_classes.get(storage_type, JSONVacancyStorage)
+    return storage_class(file_path)
+
+
+def _main_menu_loop(manager: VacancyManager) -> None:
+    """Основной цикл меню программы."""
+    while True:
+        _display_menu()
         choice = input("Выберите действие (1-4): ")
 
         if choice == "1":
-            search_query = input("Введите поисковый запрос (например: Python разработчик): ")
-            try:
-                manager.fetch_and_store_vacancies(search_query)
-                print(f"Вакансии по запросу '{search_query}' успешно сохранены.")
-            except Exception as e:
-                print(f"Ошибка при получении вакансий: {e}")
-
+            _handle_search_vacancies(manager)
         elif choice == "2":
-            try:
-                n = int(input("Введите количество вакансий для отображения (N): "))
-                top_vacancies = manager.get_top_vacancies_by_salary(n)
-                print(f"\nТоп {n} вакансий по зарплате:")
-                for i, vacancy in enumerate(top_vacancies, 1):
-                    salary = vacancy.get_salary()
-                    salary_str = f"{salary} RUB" if salary else "Зарплата не указана"
-                    print(f"{i}. {vacancy.title}")
-                    print(f"   Ссылка: {vacancy.link}")
-                    print(f"   Зарплата: {salary_str}")
-                    print(f"   Описание: {vacancy.description[:100]}...")
-                    print(f"   Требования: {vacancy.requirements[:100]}...\n")
-            except ValueError:
-                print("Пожалуйста, введите корректное число.")
-
+            _handle_top_vacancies(manager)
         elif choice == "3":
-            keyword = input("Введите ключевое слово для поиска в описании: ")
-            vacancies = manager.get_vacancies_with_keyword(keyword)
-            print(f"\nНайдено {len(vacancies)} вакансий с ключевым словом '{keyword}':")
-            for i, vacancy in enumerate(vacancies, 1):
-                salary = vacancy.get_salary()
-                salary_str = f"{salary} RUB" if salary else "Зарплата не указана"
-                print(f"{i}. {vacancy.title}")
-                print(f"   Ссылка: {vacancy.link}")
-                print(f"   Зарплата: {salary_str}")
-                print(f"   Описание: {vacancy.description[:100]}...")
-                print(f"   Требования: {vacancy.requirements[:100]}...\n")
-
+            _handle_keyword_search(manager)
         elif choice == "4":
             print("До свидания!")
             break
-
         else:
             print("Неверный выбор. Пожалуйста, введите число от 1 до 4.")
+
+
+def _display_menu() -> None:
+    """Отображает главное меню."""
+    print("\nМеню:")
+    print("1. Поиск вакансий на hh.ru")
+    print("2. Показать топ N вакансий по зарплате")
+    print("3. Поиск вакансий по ключевому слову в описании")
+    print("4. Выход")
+
+
+def _handle_search_vacancies(manager: VacancyManager) -> None:
+    """Обрабатывает поиск и сохранение вакансий."""
+    search_query = input("Введите поисковый запрос (например: Python разработчик): ")
+    try:
+        manager.fetch_and_store_vacancies(search_query)
+        print(f"Вакансии по запросу '{search_query}' успешно сохранены.")
+    except Exception as e:
+        print(f"Ошибка при получении вакансий: {e}")
+
+
+def _handle_top_vacancies(manager: VacancyManager) -> None:
+    """Обрабатывает показ топ вакансий по зарплате."""
+    try:
+        n = int(input("Введите количество вакансий для отображения (N): "))
+        top_vacancies = manager.get_top_vacancies_by_salary(n)
+        _display_vacancies(top_vacancies, f"Топ {n} вакансий по зарплате")
+    except ValueError:
+        print("Пожалуйста, введите корректное число.")
+
+
+def _handle_keyword_search(manager: VacancyManager) -> None:
+    """Обрабатывает поиск вакансий по ключевому слову."""
+    keyword = input("Введите ключевое слово для поиска в описании: ")
+    vacancies = manager.get_vacancies_with_keyword(keyword)
+    _display_vacancies(vacancies, f"Найдено {len(vacancies)} вакансий с ключевым словом '{keyword}'")
+
+
+def _display_vacancies(vacancies, title: str) -> None:
+    """Отображает список вакансий."""
+    print(f"\n{title}:")
+
+    if not vacancies:
+        print("Вакансии не найдены.")
+        return
+
+    for i, vacancy in enumerate(vacancies, 1):
+        salary = vacancy.get_salary()
+        salary_str = f"{salary} RUB" if salary else "Зарплата не указана"
+
+        print(f"{i}. {vacancy.title}")
+        print(f"   Ссылка: {vacancy.link}")
+        print(f"   Зарплата: {salary_str}")
+        print(f"   Описание: {_truncate_text(vacancy.description, 100)}")
+        print(f"   Требования: {_truncate_text(vacancy.requirements, 100)}")
+        print()
+
+
+def _truncate_text(text: str, max_length: int) -> str:
+    """Обрезает текст до указанной длины."""
+    if len(text) <= max_length:
+        return text
+    return text[:max_length] + "..."
 
 
 if __name__ == "__main__":
