@@ -16,7 +16,7 @@ def test_hh_api_get_vacancies(mocker):
     mock_response.raise_for_status = mocker.Mock()
 
     # Мокаем requests.get
-    mocker.patch("src.hh.requests.get", return_value=mock_response)
+    mocker.patch("src.api.hh_api.requests.get", return_value=mock_response)
 
     api = HHVacancyAPI()
     results = api.get_vacancies("Python")
@@ -27,7 +27,7 @@ def test_hh_api_get_vacancies(mocker):
 
 
 def test_hh_api_request_params(mocker):
-    mock_get = mocker.patch("src.hh.requests.get")
+    mock_get = mocker.patch("src.api.hh_api.requests.get")
     api = HHVacancyAPI()
     api.get_vacancies("Python")
 

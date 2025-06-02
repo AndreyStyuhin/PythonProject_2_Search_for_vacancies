@@ -54,3 +54,17 @@ def test_json_storage_filter_min_salary(tmp_path):
     filtered = storage.get_vacancies({"min_salary": 100_000})
     assert len(filtered) == 1
     assert filtered[0].title == "High"
+
+def test_json_storage_delete_vacancy(tmp_path):
+    file_path = tmp_path / "vacancies.json"
+    storage = JSONVacancyStorage(str(file_path))
+
+    v1 = Vacancy("Dev1", "link", {"from": 100000}, "desc", "req")
+    v2 = Vacancy("Dev2", "link", {"from": 150000}, "desc", "req")
+    storage.add_vacancy(v1)
+    storage.add_vacancy(v2)
+
+    storage.delete_vacancy({"title": "Dev1"})
+    results = storage.get_vacancies({})
+    assert len(results) == 1
+    assert results[0].title == "Dev2"

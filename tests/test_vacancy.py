@@ -58,3 +58,14 @@ def test_vacancy_comparison_operators():
     assert v1 >= v2
     assert v3 > v1
     assert v1 < v3
+
+def test_vacancy_to_dict_fields():
+    v = Vacancy("X", "link", {"from": 100000, "to": 150000}, "desc", "req")
+    d = v.to_dict()
+    assert d["title"] == "X"
+    assert "salary" in d
+
+def test_vacancy_ge_operator():
+    v1 = Vacancy("A", "link", {"from": 100000}, "desc", "req")
+    v2 = Vacancy("B", "link", {"from": 90000}, "desc", "req")
+    assert v1 >= v2

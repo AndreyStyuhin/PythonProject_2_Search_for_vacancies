@@ -3,7 +3,7 @@ REM Активация виртуального окружения
 call .venv\Scripts\activate
 
 REM Установка PYTHONPATH (чтобы модуль src был виден)
-set PYTHONPATH=src
+set PYTHONPATH=%PYTHONPATH%;src
 
 REM Запуск тестов с покрытием и отчётом
 pytest --cov=src --cov-report=term --cov-report=html

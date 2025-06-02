@@ -95,3 +95,18 @@ def test_get_vacancies_with_keyword():
     results = manager.get_vacancies_with_keyword("Python")
     assert len(results) == 1
     assert results[0].title == "Python"
+
+
+def test_fetch_and_store_invalid_vacancy(mocker):
+    class BrokenAPI:
+        def get_vacancies(self, _):
+            return [{"name": "Invalid", "salary": "not a dict"}]
+
+    storage = InMemoryStorage()
+    manager = VacancyManager(api=BrokenAPI(), storage=storage)
+
+    # Подавим print() через мок
+    mocker.patch("builtins.print")
+
+    manager.fetch_and_store_vacancies("bad")
+    assert len(storage.vacancies) == 0

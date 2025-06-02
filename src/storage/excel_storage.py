@@ -118,6 +118,6 @@ class ExcelVacancyStorage(VacancyStorage):
                 vacancy = Vacancy.validate_and_create(vacancy_data)
                 if vacancy.get_salary() < value:
                     return False
-            elif vacancy_data.get(key) != value:
+            elif getattr(vacancy_data, key, None) != value:
                 return False
         return True
